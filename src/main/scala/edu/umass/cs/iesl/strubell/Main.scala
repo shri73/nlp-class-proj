@@ -10,16 +10,20 @@ object Main {
 
   final val GOOD_COLOR = "black"
   final val BAD_COLOR = "red"
+    
+  final val TEX_DIR = "latex"
+  final val TEX_OUTPUT_DIR = TEX_DIR + "/output"
+  final val DOT_OUTPUT_DIR = "dot"
 
   def main(args: Array[String]) {
 
+    // TODO implement command line arguments for all this stuff
     var dotOutput = false
     var tikzOutput = true
-    var outputDir = "output"
 
     //val testDir = "/Users/strubell/Documents/research/data/ontonotes-en-1.1.0/tst-pmd/"
     val testFile = "/Users/strubell/Documents/research/data/ontonotes-en-1.1.0/tst-pmd/nw-wsj-23.dep.pmd"
-    val sentencesToTake = 5
+    val sentencesToTake = -1
 
     /* Load documents */
     print("Loading sentences... ")
@@ -35,22 +39,27 @@ object Main {
     //val testSentences = testDocs.flatMap(_.sentences).take(sentencesToTake)
 
     val testDoc = LoadOntonotes5.fromFilename(testFile).head
-    val testSentences = LoadOntonotes5.fromFilename(testFile).head.sentences.take(sentencesToTake)
+    var testSentences = LoadOntonotes5.fromFilename(testFile).head.sentences
+    if(sentencesToTake > 0)
+      testSentences = testSentences.take(sentencesToTake)
     println(s"${System.currentTimeMillis() - t0}ms")
 
     for ((sentence, i) <- testSentences.zipWithIndex) {
-      println(sentence.string.replaceAll(" '", "'"))
 
+      // TODO fix this, use a proper regex?
+      val sentenceString = sentence.string.replaceAll(" '", "'").replaceAll(" 'n", "'n").replaceAll(" ,", ",").replaceAll(" .", ".").replaceAll(" - ", "-")
+      println(sentenceString)
+      
       val connection = new Socket("localhost", 3228)
       val server = new PrintWriter(new BufferedWriter(new OutputStreamWriter(connection.getOutputStream)), true)
 
       print(s"Processing sentence ${i + 1}... ")
       t0 = System.currentTimeMillis()
-      server.println(sentence.string.replaceAll(" '", "'")) // could become a problem in messier/spoken text
+      server.println(sentenceString) // could become a problem 
       connection.shutdownOutput
       val result = io.Source.fromInputStream(connection.getInputStream).getLines().toArray.map(_.split("\\s+"))
       println(s"${System.currentTimeMillis() - t0}ms")
-      val name = s"${outputDir}/s${i}"
+      val name = s"parse${i}"
       if (dotOutput)
         generateDotFile(result, name)
       if (tikzOutput)
@@ -64,7 +73,13 @@ object Main {
   }
 
   def generateDotFile(processedSentence: Array[Array[String]], name: String) = {
-    val writer = new PrintWriter(new File(s"${name}.dot"))
+    
+    // make sure output directory exists
+    val outFile = new File(s"${DOT_OUTPUT_DIR}/${name}.dot")
+    val dir = new File(outFile.getParentFile().getAbsolutePath())
+    dir.mkdirs()
+    
+    val writer = new PrintWriter(outFile)
     writer.write(s"digraph ${name}{")
     for (line <- processedSentence) {
       if (line.size > 1) {
@@ -79,7 +94,13 @@ object Main {
   }
 
   def generateTikzFile(processedSentence: Array[Array[String]], inputSentence: app.nlp.Sentence, name: String) = {
-    val writer = new PrintWriter(new File(s"${name}.tex"))
+    
+    // make sure output directory exists
+    val outFile = new File(s"${TEX_OUTPUT_DIR}/${name}.tex")
+    val dir = new File(outFile.getParentFile().getAbsolutePath())
+    dir.mkdirs()
+    
+    val writer = new PrintWriter(outFile)
     writer.write("\\begin{dependency}[edge style={<-}]\n")
 
     val toks = processedSentence.filter(x => x.size > 1).map(y => y(2).replaceAll("\\$", "\\\\\\$"))
@@ -98,30 +119,29 @@ object Main {
     // now dependencies
     val filteredProcessedSentence = processedSentence.filter(_.size > 1)
     
-    print(s"${filteredProcessedSentence.size} ")
+    //print(s"${filteredProcessedSentence.size} ")
     filteredProcessedSentence.foreach(x => print(s"${x(2)} "))
     println()
     print(s"${inputSentence.tokens.size} ")
     inputSentence.tokens.foreach(x => print(s"${x.string} "))
-    println()
+    println("\n\n")
     
     println(s"${filteredProcessedSentence.zip(inputSentence.tokens).size}")
     
     for ((line,tok) <- filteredProcessedSentence.zip(inputSentence.tokens)) {
       var col = GOOD_COLOR
       
-      println("line 4:" + line(4))
       val depParent = if (line(4) == "0") "root" else processedSentence(line(4).toInt)(2)
       val depType = if (depParent == "root") "root" else line(5)
       
-      // this situation is disgusting; fix
+      // this situation is disgusting; think about and fix
       if(depParent == "root" && tok.parseLabel.value.toString == "root"){
         col = BAD_COLOR
       }
       
       else if(depType != tok.parseLabel.value.toString || depParent != tok.parseParent.string){
-        if (depType != "root" && tok.parseLabel.value.toString != "root")
-        	println(s"${line(2)}: ${depParent}!=${tok.parseParent.string} || ${depType} != ${tok.parseLabel.value}")
+//        if (depType != "root" && tok.parseLabel.value.toString != "root")
+//        	println(s"${line(2)}: ${depParent}!=${tok.parseParent.string} || ${depType} != ${tok.parseLabel.value}")
         col = BAD_COLOR
       }
       
