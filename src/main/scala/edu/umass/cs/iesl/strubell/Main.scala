@@ -61,6 +61,8 @@ object Main {
 
   def main(args: Array[String]) {
 
+    implicit val random = new scala.util.Random()
+
     val singleDoc = false
     val doc = "On a sultry day in late August, a dozen staff members of the Centers for Medicare and Medicaid Services gathered at the agency’s Baltimore headquarters with managers from the major contractors building HealthCare.gov to review numerous problems with President’s Obama’s online health insurance initiative. The mood was grim."
     if(singleDoc){
@@ -103,12 +105,12 @@ object Main {
 
       val startSentence = 1
 
-      val sentenceData = Seq[SentenceData]()
+      var sentenceData = Seq[SentenceData]()
 
       for ((sentence, i) <- testSentences.sentences.takeRight(testSentences.sentences.size-startSentence-1).zipWithIndex) {
 
-        val parseLabels = Seq[Prediction]()
-        val posLabels = Seq[Prediction]()
+        var parseLabels = Seq[Prediction]()
+        var posLabels = Seq[Prediction]()
 
         // TODO fix this, use a proper regex?
         // also, could become a problem with messier (e.g. transcribed-from-spoken) corpora
@@ -116,6 +118,7 @@ object Main {
         //val sentenceString = sentence
         //println(sentenceString)
 
+        if(i < 11) {
         val connection = new Socket("localhost", 3228)
         val server = new PrintWriter(new BufferedWriter(new OutputStreamWriter(connection.getOutputStream)), true)
 
@@ -154,15 +157,17 @@ object Main {
               posMistakes(app.nlp.pos.PennPosDomain.getIndex(goldTag))(app.nlp.pos.PennPosDomain.getIndex(taggerTag)) += 1
             }
 
-            parseLabels :+ new Prediction(parserLabel, parseError)
-            posLabels :+ new Prediction(taggerTag, tagError)
+            parseLabels :+= new Prediction(parserLabel, parseError)
+            posLabels :+= new Prediction(taggerTag, tagError)
 
 //            val mistake = new Mistake(line, line, parseError, tagError)
 //            errors :+ mistake
           }
         }
 
-        sentenceData :+ new SentenceData(sentence, posLabels, parseLabels)
+
+        println("ADDING SENTENCE")
+        sentenceData :+= new SentenceData(sentence, posLabels, parseLabels)
 
 
         if (dotOutput)
@@ -175,6 +180,7 @@ object Main {
         //  printResult(result)
 
         connection.close
+        }
       }
 
       // write confusion matrix output
@@ -191,10 +197,14 @@ object Main {
       app.nlp.parse.ParseTreeLabelDomain.foreach(x => parseLabelWriter.println(x))
       parseLabelWriter.close
       parseConfusionWriter.close
+
+      val errorDetector = new ErrorDetector
+      println(sentenceData.length)
+      println(sentenceData.slice(0,5).length)
+      errorDetector.train(sentenceData.slice(0,5), sentenceData.slice(5,10))
     }
 
-    val errorDetector = new ErrorDetector
-    errorDetector.train(sentenceData.slice(0,100), sentenceData.slice(100,150))
+
   }
 
   def generateTikzFile(processedSentence: Array[Array[String]], inputSentence: app.nlp.Sentence, name: String) = {

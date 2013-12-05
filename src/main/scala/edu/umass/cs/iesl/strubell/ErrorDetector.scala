@@ -6,7 +6,7 @@ import cc.factorie.app.chain.Observations._
 import java.io._
 import cc.factorie.util.{HyperparameterMain, ClasspathURL, BinarySerializer}
 import cc.factorie.optimize.Trainer
-import cc.factorie.variable.{HammingObjective, BinaryFeatureVectorVariable, CategoricalVectorDomain}
+import cc.factorie.variable.{CategoricalLabeling, HammingObjective, BinaryFeatureVectorVariable, CategoricalVectorDomain}
 import cc.factorie.app.nlp.pos._
 
 
@@ -27,13 +27,18 @@ class ErrorTag(val token : cc.factorie.app.nlp.Token, initialValue : scala.Prede
 class LabeledErrorTag(token:Token, targetValue:String) extends ErrorTag(token, targetValue) with CategoricalLabeling[scala.Predef.String]
 
 class ErrorDetector extends DocumentAnnotator {
-      def this(url:java.net.URL) = { this(); deserialize(url.openConnection().getInputStream) }
+  def this(url:java.net.URL) = { this(); deserialize(url.openConnection().getInputStream) }
+
   def process(document: Document) = {
     document.sentences.foreach(s => {
       if (s.nonEmpty) {
-        s.tokens.foreach(t => if (!t.attr.contains[PennPosTag]) t.attr += new PennPosTag(t, "NN"))
+//        s.tokens.foreach(t => if (!t.attr.contains[ErrorTag]) t.attr += new ErrorTag(t, "FALSE"))
 //        initPOSFeatures(s)
-        model.maximize(s.tokens.map(_.posTag))(null)
+//        model.maximize(s.tokens.map(_.posTag))(null)
+        println("FOUND EMPTY SHIT")
+      }
+      else {
+        println("FOUND NONEMPTY SHIT")
       }
     })
     document
@@ -71,6 +76,11 @@ class ErrorDetector extends DocumentAnnotator {
 
     val trainSentences = trainData.map(_.sentence)
     val testSentences = testData.map(_.sentence)
+
+    println(trainSentences.length)
+
+    println("TRAIN SENT VALS")
+    trainSentences.foreach( s => println(s.attr[LabeledErrorTag]))
 
     def evaluate() {
       (trainSentences ++ testSentences).foreach(s => model.maximize(s.tokens.map(_.attr[LabeledErrorTag]))(null))
@@ -130,12 +140,12 @@ class ErrorDetector extends DocumentAnnotator {
       features += "PREDICTEDPOS=" + posTag.label
       features += "PREDICTEDPARSE=" + parseTag.label
       
-      val correct = if(posTag.correct) correct = "TRUE" else correct = "FALSE"
+      val correct = if(posTag.correct) "TRUE" else "FALSE"
 
       token.attr += new LabeledErrorTag(token, correct)
 
     }
-    addNeighboringFeatureConjunctions(sentence.tokens, (t: Token) => t.attr[PosFeatures], "W=[^@]*$", List(-2), List(-1), List(1), List(-2, -1), List(-1, 0))
+//    addNeighboringFeatureConjunctions(sentence.tokens, (t: Token) => t.attr[PosFeatures], "W=[^@]*$", List(-2), List(-1), List(1), List(-2, -1), List(-1, 0))
   }
 
   def initialize(sentenceData : Seq[SentenceData]) {
