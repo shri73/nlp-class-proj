@@ -193,6 +193,8 @@ object Main {
       parseConfusionWriter.close
     }
 
+    val errorDetector = new ErrorDetector
+    errorDetector.train(sentenceData.slice(0,100), sentenceData.slice(100,150))
   }
 
   def generateTikzFile(processedSentence: Array[Array[String]], inputSentence: app.nlp.Sentence, name: String) = {

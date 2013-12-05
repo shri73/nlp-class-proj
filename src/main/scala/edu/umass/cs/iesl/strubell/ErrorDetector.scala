@@ -15,11 +15,16 @@ import cc.factorie.app.nlp.pos._
 //class OntonotesErrorDetector(url:java.net.URL) extends ErrorDetector(url)
 //object OntonotesChainPosTagger extends OntonotesErrorDetector(ClasspathURL[OntonotesChainPosTagger](".factorie"))
 
-object ErrorDomain extends cc.factorie.variable.CategoricalDomain[scala.Predef.String]
+object ErrorDomain extends cc.factorie.variable.CategoricalDomain[scala.Predef.String] {
+  this ++= Vector("TRUE", "FALSE")
+  freeze()
+}
 
-class ErrorTag(val token : cc.factorie.app.nlp.Token, initialValue : scala.Predef.String) extends cc.factorie.variable.CategoricalVariable[scala.Predef.String] {
+class ErrorTag(val token : cc.factorie.app.nlp.Token, initialValue : scala.Predef.String) extends cc.factorie.variable.CategoricalVariable(initialValue) {
   def domain = ErrorDomain
 }
+
+class LabeledErrorTag(token:Token, targetValue:String) extends ErrorTag(token, targetValue) with CategoricalLabeling[scala.Predef.String]
 
 class ErrorDetector extends DocumentAnnotator {
       def this(url:java.net.URL) = { this(); deserialize(url.openConnection().getInputStream) }
@@ -34,9 +39,9 @@ class ErrorDetector extends DocumentAnnotator {
     document
   }
 
-  def prereqAttrs = Seq(classOf[Token], classOf[Sentence])
+  def prereqAttrs = Seq(classOf[Token], classOf[Sentence], classOf[PennPosTag])
 
-  def postAttrs = Seq(classOf[PennPosTag])
+  def postAttrs = Seq(classOf[PennPosTag], classOf[ErrorTag])
 
   def tokenAnnotationString(token: Token) = {
     val label = token.attr[PennPosTag]; if (label ne null) label.categoryValue else "(null)"
@@ -68,11 +73,11 @@ class ErrorDetector extends DocumentAnnotator {
     val testSentences = testData.map(_.sentence)
 
     def evaluate() {
-      (trainSentences ++ testSentences).foreach(s => model.maximize(s.tokens.map(_.attr[LabeledPennPosTag]))(null))
-      println("Train accuracy: " + HammingObjective.accuracy(trainSentences.flatMap(s => s.tokens.map(_.attr[LabeledPennPosTag]))))
-      println("Test accuracy: " + HammingObjective.accuracy(testSentences.flatMap(s => s.tokens.map(_.attr[LabeledPennPosTag]))))
+      (trainSentences ++ testSentences).foreach(s => model.maximize(s.tokens.map(_.attr[LabeledErrorTag]))(null))
+      println("Train accuracy: " + HammingObjective.accuracy(trainSentences.flatMap(s => s.tokens.map(_.attr[LabeledErrorTag]))))
+      println("Test accuracy: " + HammingObjective.accuracy(testSentences.flatMap(s => s.tokens.map(_.attr[LabeledErrorTag]))))
     }
-    val examples = trainSentences.map(sentence => new model.ChainStructuredSVMExample(sentence.tokens.map(_.attr[LabeledPennPosTag]))).toSeq
+    val examples = trainSentences.map(sentence => new model.ChainStructuredSVMExample(sentence.tokens.map(_.attr[LabeledErrorTag]))).toSeq
     //val optimizer = new cc.factorie.optimize.AdaGrad(rate=lrate)
     val optimizer = new cc.factorie.optimize.AdaGradRDA(rate = lrate, l1 = l1Factor / examples.length, l2 = l2Factor / examples.length)
     Trainer.onlineTrain(model.parameters, examples, maxIterations = numIterations, optimizer = optimizer, evaluate = evaluate, useParallelTrainer = false)
@@ -88,11 +93,11 @@ class ErrorDetector extends DocumentAnnotator {
   }
 
 
-  val model = new ChainModel[PennPosTag, PosFeatures, Token](PennPosDomain,
+  val model = new ChainModel[ErrorTag, PosFeatures, Token](ErrorDomain,
     PosFeaturesDomain,
     l => l.token.attr[PosFeatures],
     l => l.token,
-    t => t.attr[PennPosTag]) {
+    t => t.attr[ErrorTag]) {
     useObsMarkov = false
   }
 
@@ -124,8 +129,10 @@ class ErrorDetector extends DocumentAnnotator {
 
       features += "PREDICTEDPOS=" + posTag.label
       features += "PREDICTEDPARSE=" + parseTag.label
+      
+      val correct = if(posTag.correct) correct = "TRUE" else correct = "FALSE"
 
-      token.attr += posTag
+      token.attr += new LabeledErrorTag(token, correct)
 
     }
     addNeighboringFeatureConjunctions(sentence.tokens, (t: Token) => t.attr[PosFeatures], "W=[^@]*$", List(-2), List(-1), List(1), List(-2, -1), List(-1, 0))
