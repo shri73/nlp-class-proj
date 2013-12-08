@@ -118,7 +118,7 @@ object Main {
         //val sentenceString = sentence
         //println(sentenceString)
 
-        if(i < 11) {
+        //        if(i < 11) {
         val connection = new Socket("localhost", 3228)
         val server = new PrintWriter(new BufferedWriter(new OutputStreamWriter(connection.getOutputStream)), true)
 
@@ -160,26 +160,26 @@ object Main {
             parseLabels :+= new Prediction(parserLabel, parseError)
             posLabels :+= new Prediction(taggerTag, tagError)
 
-//            val mistake = new Mistake(line, line, parseError, tagError)
-//            errors :+ mistake
+            //            val mistake = new Mistake(line, line, parseError, tagError)
+            //            errors :+ mistake
           }
-        }
+          //        }
 
 
-        println("ADDING SENTENCE")
-        sentenceData :+= new SentenceData(sentence, posLabels, parseLabels)
+          //        println("ADDING SENTENCE")
+          if(posLabels.length > 0) sentenceData :+= new SentenceData(sentence, posLabels, parseLabels)
 
 
-        if (dotOutput)
-          generateDotFile(result, name)
+          if (dotOutput)
+            generateDotFile(result, name)
 
-        if (tikzOutput)
-          generateTikzFile(result, sentence, name)
+          if (tikzOutput)
+            generateTikzFile(result, sentence, name)
 
-        //if(termOutput)
-        //  printResult(result)
+          //if(termOutput)
+          //  printResult(result)
 
-        connection.close
+          connection.close
         }
       }
 
@@ -201,9 +201,9 @@ object Main {
       val errorDetector = new ErrorDetector
       println(sentenceData.length)
       println(sentenceData.slice(0,5).length)
-      errorDetector.train(sentenceData.slice(0,5), sentenceData.slice(5,10))
+      val (trainData, testData) = sentenceData.split(0.6)
+      errorDetector.train(trainData, testData)
     }
-
 
   }
 
@@ -306,22 +306,22 @@ object Main {
   def generateDotFile(processedSentence: Array[Array[String]], name: String) = {
 
     // make sure output directory exists
-//    val outFile = new File(s"${DOT_OUTPUT_DIR}/${name}.dot")
-//    val dir = new File(outFile.getParentFile().getAbsolutePath())
-//    dir.mkdirs()
-//
-//    val writer = new PrintWriter(outFile)
-//    writer.write(s"digraph ${name}{")
-//    for (line <- processedSentence) {
-//      if (line.size > 1) {
-//        if (line(4) == "0")
-//          writer.write(s""""${line(2)}/${line(3)}";""")
-//        else
-//          writer.write(s""""${line(2)}/${line(3)}" -> "${processedSentence(line(4).toInt)(2)}/${processedSentence(line(4).toInt)(3)}" [label=${line(5)}];""")
-//      }
-//    }
-//    writer.write("}")
-//    writer.close
+    //    val outFile = new File(s"${DOT_OUTPUT_DIR}/${name}.dot")
+    //    val dir = new File(outFile.getParentFile().getAbsolutePath())
+    //    dir.mkdirs()
+    //
+    //    val writer = new PrintWriter(outFile)
+    //    writer.write(s"digraph ${name}{")
+    //    for (line <- processedSentence) {
+    //      if (line.size > 1) {
+    //        if (line(4) == "0")
+    //          writer.write(s""""${line(2)}/${line(3)}";""")
+    //        else
+    //          writer.write(s""""${line(2)}/${line(3)}" -> "${processedSentence(line(4).toInt)(2)}/${processedSentence(line(4).toInt)(3)}" [label=${line(5)}];""")
+    //      }
+    //    }
+    //    writer.write("}")
+    //    writer.close
   }
 
   /* Load serialized models */

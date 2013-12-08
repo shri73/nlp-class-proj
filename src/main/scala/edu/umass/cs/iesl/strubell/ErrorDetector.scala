@@ -72,18 +72,23 @@ class ErrorDetector extends DocumentAnnotator {
     // TODO Accomplish this TokenNormalization instead by calling POS3.preProcess
     trainData.foreach( s => initPOSFeatures(s.sentence, s.predictedPosLabels, s.predictedParseLabels) )
     PosFeaturesDomain.freeze()
+    println("TEST DATA", testData.foreach( s => s.predictedParseLabels.length))
     testData.foreach( s => initPOSFeatures(s.sentence, s.predictedPosLabels, s.predictedParseLabels) )
 
     val trainSentences = trainData.map(_.sentence)
     val testSentences = testData.map(_.sentence)
 
-    println(trainSentences.length)
+//    println(trainSentences.length)
 
     println("TRAIN SENT VALS")
-    trainSentences.foreach( s => println(s.attr[LabeledErrorTag]))
+    testSentences.foreach( s => println(s.tokens.map(_.attr[LabeledErrorTag])))
+//    trainSentences.foreach( s => println(s.tokens.map(_.attr[PosFeatures])))
+
 
     def evaluate() {
-      (trainSentences ++ testSentences).foreach(s => model.maximize(s.tokens.map(_.attr[LabeledErrorTag]))(null))
+      (trainSentences ++ testSentences).foreach(s => {
+        println(s.tokens.map(_.attr[PosFeatures]))
+        model.maximize(s.tokens.map(_.attr[LabeledErrorTag]))(null)})
       println("Train accuracy: " + HammingObjective.accuracy(trainSentences.flatMap(s => s.tokens.map(_.attr[LabeledErrorTag]))))
       println("Test accuracy: " + HammingObjective.accuracy(testSentences.flatMap(s => s.tokens.map(_.attr[LabeledErrorTag]))))
     }
@@ -142,7 +147,10 @@ class ErrorDetector extends DocumentAnnotator {
       
       val correct = if(posTag.correct) "TRUE" else "FALSE"
 
+//      println(correct)
       token.attr += new LabeledErrorTag(token, correct)
+
+//      println(token.attr[LabeledErrorTag].token.attr[PosFeatures])
 
     }
 //    addNeighboringFeatureConjunctions(sentence.tokens, (t: Token) => t.attr[PosFeatures], "W=[^@]*$", List(-2), List(-1), List(1), List(-2, -1), List(-1, 0))
