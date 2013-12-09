@@ -20,44 +20,44 @@ object CorefPipeline {
 	  println("Loading models... ")
 	  //val modelLoc = args(0)
 	
-	  // POS tagger
-	  print("\tpos: ")
-	  var t0 = System.currentTimeMillis()
-	  val tagger = app.nlp.pos.OntonotesForwardPosTagger
-	  //tagger.deserialize(new java.io.File(s"$modelLoc/OntonotesForwardPosTagger.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	
-	  // dependency parser
-	  print("\tparse: ")
-	  t0 = System.currentTimeMillis()
-	  val parser = app.nlp.parse.OntonotesTransitionBasedParser
-	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	
-	  print("\tner: ")
-	  t0 = System.currentTimeMillis()
-	  val ner = app.nlp.ner.ConllStackedChainNer
-	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	  
-	  print("\tmention (gender): ")
-	  t0 = System.currentTimeMillis()
-	  val mentionGender = app.nlp.mention.MentionGenderLabeler
-	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	  
-	  print("\tmention (number): ")
-	  t0 = System.currentTimeMillis()
-	  val mentionNumber = app.nlp.mention.MentionNumberLabeler
-	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	  
-	  print("\tmention (entity type): ")
-	  t0 = System.currentTimeMillis()
-	  val mentionEntityType = app.nlp.mention.MentionEntityTypeLabeler
-	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
-	  println(s"${System.currentTimeMillis() - t0}ms")
-	  
+//	  // POS tagger
+//	  print("\tpos: ")
+//	  var t0 = System.currentTimeMillis()
+//	  val tagger = app.nlp.pos.OntonotesForwardPosTagger
+//	  //tagger.deserialize(new java.io.File(s"$modelLoc/OntonotesForwardPosTagger.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	
+//	  // dependency parser
+//	  print("\tparse: ")
+//	  t0 = System.currentTimeMillis()
+//	  val parser = app.nlp.parse.OntonotesTransitionBasedParser
+//	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	
+//	  print("\tner: ")
+//	  t0 = System.currentTimeMillis()
+//	  val ner = app.nlp.ner.ConllStackedChainNer
+//	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	  
+//	  print("\tmention (gender): ")
+//	  t0 = System.currentTimeMillis()
+//	  val mentionGender = app.nlp.mention.MentionGenderLabeler
+//	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	  
+//	  print("\tmention (number): ")
+//	  t0 = System.currentTimeMillis()
+//	  val mentionNumber = app.nlp.mention.MentionNumberLabeler
+//	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	  
+//	  print("\tmention (entity type): ")
+//	  t0 = System.currentTimeMillis()
+//	  val mentionEntityType = app.nlp.mention.MentionEntityTypeLabeler
+//	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
+//	  println(s"${System.currentTimeMillis() - t0}ms")
+//	  
 	  print("\tcoref: ")
 	  t0 = System.currentTimeMillis()
 	  val coref = app.nlp.coref.ForwardCoref
