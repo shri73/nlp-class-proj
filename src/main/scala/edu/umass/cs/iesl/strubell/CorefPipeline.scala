@@ -59,7 +59,7 @@ object CorefPipeline {
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 	  print("\tcoref: ")
-	  t0 = System.currentTimeMillis()
+	  var t0 = System.currentTimeMillis()
 	  val coref = app.nlp.coref.ForwardCoref
 	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
 	  println(s"${System.currentTimeMillis() - t0}ms")
