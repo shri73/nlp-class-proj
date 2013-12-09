@@ -109,9 +109,15 @@
     
     <dependency>
       <groupId>cc.factorie.app.nlp</groupId>
+      <artifactId>wordnet</artifactId>
+      <version>1.0-RC5</version>
+    </dependency>
+    
+    <!--  <dependency>
+      <groupId>cc.factorie.app.nlp</groupId>
       <artifactId>factorie-nlp-resources-ner</artifactId>
       <version>0.1-SNAPSHOT</version>
-    </dependency>
+    </dependency>  -->
 
   </dependencies>
 
