@@ -60,7 +60,7 @@ object CorefPipeline {
 //	  
 	  print("\tcoref: ")
 	  var t0 = System.currentTimeMillis()
-	  val coref = app.nlp.coref.ForwardCoref
+	  val coref = app.nlp.coref.NerForwardCoref
 	  //parser.deserialize(new java.io.File(s"$modelLoc/OntonotesTransitionBasedParser.factorie"))
 	  println(s"${System.currentTimeMillis() - t0}ms")
 	  
