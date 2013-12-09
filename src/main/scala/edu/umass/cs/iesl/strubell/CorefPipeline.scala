@@ -68,7 +68,7 @@ object CorefPipeline {
 	  print("Running pipeline... ")
 	  t0 = System.currentTimeMillis()
 	  val annotators = Seq(coref)//Seq(tagger, parser, ner, mentionGender, mentionNumber, mentionEntityType, coref)
-	  val pipeline = app.nlp.DocumentAnnotatorPipeline(tagger)
+	  val pipeline = app.nlp.DocumentAnnotatorPipeline(coref)
 	  pipeline.process(doc)
 	  println(s"${System.currentTimeMillis() - t0}ms")
 	
