@@ -13,7 +13,7 @@ import cc.factorie.app.nlp.coref._
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "/home/strubell/canvas/data/conll2011/conll-test-clean.txt"
+	  val testDoc = "data/conll-test-clean.txt"
 	  val doc = ConllCorefLoader.loadWithParse(testDoc).head
 	  
 	  /* Load serialized models */
