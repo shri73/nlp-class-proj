@@ -34,6 +34,8 @@ pos_data = np.loadtxt(pos_fname)
 ner_data = np.loadtxt(ner_fname)
 
 np.fill_diagonal(ner_data, 0)
+np.fill_diagonal(pos_data, 0)
+np.fill_diagonal(parse_data, 0)
 
 #f = codecs.open(parse_data, encoding='utf-8')
 #parse_labels = f.readlines()
