@@ -38,7 +38,8 @@ object CorefPipeline {
 //	
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
-	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+//	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
