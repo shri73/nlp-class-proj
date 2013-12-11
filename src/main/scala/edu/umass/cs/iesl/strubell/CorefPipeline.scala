@@ -10,13 +10,14 @@ import scala.collection.mutable.ArrayBuffer
 import cc.factorie.app.nlp.Sentence
 import cc.factorie.app.nlp.coref._
 import cc.factorie.app.nlp.ner._
+import cc.factorie.app.nlp.pos.LabeledPennPosTag
 
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
 	  val testDoc = "data/conll2003/eng.testa"
 //	  val doc = LoadOntonotes5.fromFilename(testDoc).head
-    val doc = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
+    val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
 	  /* Load serialized models */
 
@@ -65,7 +66,7 @@ object CorefPipeline {
 	  t0 = System.currentTimeMillis()
 	  val annotators = Seq(coref)//Seq(tagger, parser, ner, mentionGender, mentionNumber, mentionEntityType, coref)
 	  val pipeline = app.nlp.DocumentAnnotatorPipeline(tagger,ner)
-	  doc.foreach( d => pipeline.process(d))
+	  docs.foreach( d => pipeline.process(d))
 	  println(s"${System.currentTimeMillis() - t0}ms")
 	
 	  /* Print formatted results */
@@ -74,8 +75,8 @@ object CorefPipeline {
 
 
     // Get our error hashes
-    val posErrorHash = tagger.detailedAccuracy(doc)
-    val nerErrorHash = ner.testError(doc)
+    val posErrorHash = tagger.detailedAccuracy(docs)
+    val nerErrorHash = ner.testError(docs)
 
 
     // Print out the error hashes
@@ -118,7 +119,18 @@ object CorefPipeline {
     nerLabelWriter.close
     nerConfusionWriter.close
 
-    println("NER tags by index")
+    val nerSentenceOutput = new PrintWriter(new File("ner-tag-output.txt"))
+
+
+    for(d <- docs) {
+      for(s <- d.sentences) {
+        for(t <- s.tokens) {
+          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value)
+        }
+        nerSentenceOutput.println("")
+      }
+    }
+    nerSentenceOutput.close
 
 
 //	  val printers = for (ann <- pipeline.annotators) yield (t: app.nlp.Token) => ann.tokenAnnotationString(t)
