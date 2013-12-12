@@ -18,7 +18,7 @@ class SecondPrediction(val value : String, val scoreVal: String)
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "data/conll2003/eng.testa.poop"
+	  val testDoc = "data/conll2003/eng.testa"
 //	  val doc = LoadOntonotes5.fromFilename(testDoc).head
     val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
@@ -41,8 +41,8 @@ object CorefPipeline {
 //	
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
-	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
-//    val ner = app.nlp.ner.ConllStackedChainNer
+//	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
