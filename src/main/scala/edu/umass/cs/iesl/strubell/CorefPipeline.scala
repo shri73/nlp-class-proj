@@ -13,6 +13,8 @@ import cc.factorie.app.nlp.ner._
 import cc.factorie.app.nlp.pos.LabeledPennPosTag
 import cc.factorie.app.chain._
 
+class SecondPrediction(val value : String)
+
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
@@ -39,8 +41,8 @@ object CorefPipeline {
 //	
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
-	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
-//    val ner = app.nlp.ner.ConllStackedChainNer
+//	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
@@ -129,11 +131,27 @@ object CorefPipeline {
         if(s.attr.contains(classOf[ViterbiResults])) {
           // Look at the scores. If pred label is 0, then select the second highest, map that to the result, and display it
 
-          s.attr[ViterbiResults].localScores.foreach(i => print(i + " "))
-          println("")
+//          print("MaxVal: ")
+//          s.attr[ViterbiResults].mapValues.foreach(i => print(BilouConllNerDomain.dimensionName(i) + " "))
+//          println("")
+//          print("2MaxVa: ")
+          for((t, i) <- s.tokens.zipWithIndex) {
+            t.attr += new SecondPrediction(BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].secondMapValues(i)))
+          }
+//          s.attr[ViterbiResults].secondMapValues.foreach(i => print(BilouConllNerDomain.dimensionName(i) + " "))
+//          println("")
+//          print("Scores: ")
+//          s.attr[ViterbiResults].localScores.foreach(i => print(BilouConllNerDomain.dimensionName(i.toSeq.zipWithIndex.maxBy(_._1)._2) + " "))
+//          println("")
+//          print("Tags  : ")
+//          s.tokens.foreach(t => print(t.attr[LabeledBilouConllNerTag].value + " "))
+//          println("")
+//          val maxIndex = s.attr[ViterbiResults].localScores.zipWithIndex.maxBy(_._1)._2
+//          val maxName = BilouConllNerDomain.dimensionName(maxIndex)
+//          println(maxName)
         }
         for(t <- s.tokens) {
-          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value)
+          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value + "~*~" + t.attr[SecondPrediction].value)
         }
         nerSentenceOutput.println("")
       }
@@ -144,4 +162,5 @@ object CorefPipeline {
 //	  val printers = for (ann <- pipeline.annotators) yield (t: app.nlp.Token) => ann.tokenAnnotationString(t)
 //	  println(doc.owplString(printers))
   }
+
 }
