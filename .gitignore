@@ -2,4 +2,6 @@ target/
 models/
 res/
 *.class
-
+.idea/
+*.iml
+*.dat

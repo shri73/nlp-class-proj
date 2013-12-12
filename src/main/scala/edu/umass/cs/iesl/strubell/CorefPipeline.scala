@@ -10,14 +10,18 @@ import scala.collection.mutable.ArrayBuffer
 import cc.factorie.app.nlp.Sentence
 import cc.factorie.app.nlp.coref._
 import cc.factorie.app.nlp.ner._
+import cc.factorie.app.nlp.pos.LabeledPennPosTag
+import cc.factorie.app.chain._
 
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "data/nw-wsj-23.dep.pmd"
-	  val doc = LoadOntonotes5.fromFilename(testDoc).head
+	  val testDoc = "data/conll2003/eng.testa.poop"
+//	  val doc = LoadOntonotes5.fromFilename(testDoc).head
+    val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
 	  /* Load serialized models */
+
 	  println("Loading models... ")
 	  //val modelLoc = args(0)
 	
@@ -36,6 +40,7 @@ object CorefPipeline {
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
 	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+//    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
@@ -63,7 +68,7 @@ object CorefPipeline {
 	  t0 = System.currentTimeMillis()
 	  val annotators = Seq(coref)//Seq(tagger, parser, ner, mentionGender, mentionNumber, mentionEntityType, coref)
 	  val pipeline = app.nlp.DocumentAnnotatorPipeline(tagger,ner)
-	  pipeline.process(doc)
+	  docs.foreach( d => pipeline.process(d))
 	  println(s"${System.currentTimeMillis() - t0}ms")
 	
 	  /* Print formatted results */
@@ -72,8 +77,8 @@ object CorefPipeline {
 
 
     // Get our error hashes
-    val posErrorHash = tagger.detailedAccuracy(doc.sentences)
-    val nerErrorHash = ner.testError(Seq(doc))
+    val posErrorHash = tagger.detailedAccuracy(docs)
+    val nerErrorHash = ner.testError(docs)
 
 
     // Print out the error hashes
@@ -86,6 +91,55 @@ object CorefPipeline {
     for(key <- nerErrorHash.keys) {
       println(key.replaceAllLiterally("~*~", " ") + ": " + nerErrorHash(key).length)
     }
+
+    val numPosTags = app.nlp.pos.PennPosDomain.categories.size
+    val numNerTags = app.nlp.ner.BilouConllNerDomain.categories.size
+    var posMistakes = Array.fill(numPosTags, numPosTags){0}
+    var nerMistakes = Array.fill(numNerTags, numNerTags){0}
+
+    for(key <- posErrorHash.keys) {
+      val split = key.split("~\\*~")
+      posMistakes(app.nlp.pos.PennPosDomain.getIndex(split(0)))(app.nlp.pos.PennPosDomain.getIndex(split(1))) = posErrorHash(key).length
+    }
+
+    for(key <- nerErrorHash.keys) {
+      val split = key.split("~\\*~")
+      nerMistakes(app.nlp.ner.BilouConllNerDomain.getIndex(split(0)))(app.nlp.ner.BilouConllNerDomain.getIndex(split(1))) = nerErrorHash(key).length
+    }
+
+    val posConfusionWriter = new PrintWriter(new File("pos-confusion.dat"))
+    val posLabelWriter = new PrintWriter(new File("pos-labels"))
+    posMistakes.foreach(x => posConfusionWriter.println(x.mkString(" ")))
+    app.nlp.pos.PennPosDomain.foreach(x => posLabelWriter.println(x))
+    posLabelWriter.close
+    posConfusionWriter.close
+
+    val nerConfusionWriter = new PrintWriter(new File("ner-confusion.dat"))
+    val nerLabelWriter = new PrintWriter(new File("ner-labels"))
+    nerMistakes.foreach(x => nerConfusionWriter.println(x.mkString(" ")))
+    app.nlp.ner.BilouConllNerDomain.foreach(x => nerLabelWriter.println(x))
+    nerLabelWriter.close
+    nerConfusionWriter.close
+
+    val nerSentenceOutput = new PrintWriter(new File("ner-tag-output.txt"))
+
+
+    for(d <- docs) {
+      for(s <- d.sentences) {
+        if(s.attr.contains(classOf[ViterbiResults])) {
+          // Look at the scores. If pred label is 0, then select the second highest, map that to the result, and display it
+
+          s.attr[ViterbiResults].localScores.foreach(i => print(i + " "))
+          println("")
+        }
+        for(t <- s.tokens) {
+          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value)
+        }
+        nerSentenceOutput.println("")
+      }
+    }
+    nerSentenceOutput.close
+
 
 //	  val printers = for (ann <- pipeline.annotators) yield (t: app.nlp.Token) => ann.tokenAnnotationString(t)
 //	  println(doc.owplString(printers))
