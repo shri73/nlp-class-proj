@@ -135,10 +135,31 @@ object CorefPipeline {
 //          s.attr[ViterbiResults].mapValues.foreach(i => print(BilouConllNerDomain.dimensionName(i) + " "))
 //          println("")
 //          print("2MaxVa: ")
+
+
+
           for((t, i) <- s.tokens.zipWithIndex) {
+            var max = -100000000.0
+            var secondMax = -100000000.0
+            var maxIdx = -1
+            var secondMaxIdx = -1
+            for((score, j) <-s.attr[ViterbiResults].localScores(i).toSeq.zipWithIndex ) {
+              if(score > max) {
+                max = score
+                maxIdx = j
+              }
+            }
+
+            for((score, j) <-s.attr[ViterbiResults].localScores(i).toSeq.zipWithIndex ) {
+              if(score > secondMax && score < max) {
+                secondMax = score
+                secondMaxIdx = j
+              }
+            }
+
             t.attr += new SecondPrediction(
               BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].secondMapValues(i)),
-              BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].localScores(i).toSeq.zipWithIndex.maxBy(_._1)._2)
+              BilouConllNerDomain.dimensionName(secondMaxIdx)
             )
           }
 //          s.attr[ViterbiResults].secondMapValues.foreach(i => print(BilouConllNerDomain.dimensionName(i) + " "))
@@ -154,7 +175,7 @@ object CorefPipeline {
 //          println(maxName)
         }
         for(t <- s.tokens) {
-          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value + "~*~" + t.attr[SecondPrediction].value + "~+~" + t.attr[SecondPrediction].scoreVal)
+          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value + "~*~" + t.attr[SecondPrediction].value + "~*~" + t.attr[SecondPrediction].scoreVal)
         }
         nerSentenceOutput.println("")
       }
@@ -165,5 +186,6 @@ object CorefPipeline {
 //	  val printers = for (ann <- pipeline.annotators) yield (t: app.nlp.Token) => ann.tokenAnnotationString(t)
 //	  println(doc.owplString(printers))
   }
+
 
 }
