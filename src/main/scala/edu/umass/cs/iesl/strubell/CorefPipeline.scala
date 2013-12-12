@@ -13,12 +13,12 @@ import cc.factorie.app.nlp.ner._
 import cc.factorie.app.nlp.pos.LabeledPennPosTag
 import cc.factorie.app.chain._
 
-class SecondPrediction(val value : String)
+class SecondPrediction(val value : String, val scoreVal: String)
 
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "data/conll2003/eng.testa"
+	  val testDoc = "data/conll2003/eng.testa.poop"
 //	  val doc = LoadOntonotes5.fromFilename(testDoc).head
     val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
@@ -41,8 +41,8 @@ object CorefPipeline {
 //	
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
-//	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
-    val ner = app.nlp.ner.ConllStackedChainNer
+	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+//    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
@@ -136,7 +136,10 @@ object CorefPipeline {
 //          println("")
 //          print("2MaxVa: ")
           for((t, i) <- s.tokens.zipWithIndex) {
-            t.attr += new SecondPrediction(BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].secondMapValues(i)))
+            t.attr += new SecondPrediction(
+              BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].secondMapValues(i)),
+              BilouConllNerDomain.dimensionName(s.attr[ViterbiResults].localScores(i).toSeq.zipWithIndex.maxBy(_._1)._2)
+            )
           }
 //          s.attr[ViterbiResults].secondMapValues.foreach(i => print(BilouConllNerDomain.dimensionName(i) + " "))
 //          println("")
@@ -151,7 +154,7 @@ object CorefPipeline {
 //          println(maxName)
         }
         for(t <- s.tokens) {
-          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value + "~*~" + t.attr[SecondPrediction].value)
+          nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value + "~*~" + t.attr[SecondPrediction].value + "~+~" + t.attr[SecondPrediction].scoreVal)
         }
         nerSentenceOutput.println("")
       }
