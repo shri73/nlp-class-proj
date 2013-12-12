@@ -11,11 +11,12 @@ import cc.factorie.app.nlp.Sentence
 import cc.factorie.app.nlp.coref._
 import cc.factorie.app.nlp.ner._
 import cc.factorie.app.nlp.pos.LabeledPennPosTag
+import cc.factorie.app.chain._
 
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "data/conll2003/eng.testa"
+	  val testDoc = "data/conll2003/eng.testa.poop"
 //	  val doc = LoadOntonotes5.fromFilename(testDoc).head
     val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
@@ -38,8 +39,8 @@ object CorefPipeline {
 //	
 	  print("\tner: ")
 //	  t0 = System.currentTimeMillis()
-//	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
-    val ner = app.nlp.ner.ConllStackedChainNer
+	  val ner = app.nlp.ner.NoEmbeddingsConllStackedChainNer
+//    val ner = app.nlp.ner.ConllStackedChainNer
 //	  println(s"${System.currentTimeMillis() - t0}ms")
 //	  
 //	  print("\tmention (gender): ")
@@ -125,6 +126,12 @@ object CorefPipeline {
 
     for(d <- docs) {
       for(s <- d.sentences) {
+        if(s.attr.contains(classOf[ViterbiResults])) {
+          // Look at the scores. If pred label is 0, then select the second highest, map that to the result, and display it
+
+          s.attr[ViterbiResults].localScores.foreach(i => print(i + " "))
+          println("")
+        }
         for(t <- s.tokens) {
           nerSentenceOutput.println(t.string + "~*~" + t.attr[LabeledPennPosTag].value + "~*~" + t.attr[LabeledPennPosTag].target.value + "~*~" + t.attr[LabeledBilouConllNerTag].value + "~*~" + t.attr[LabeledBilouConllNerTag].target.value)
         }
