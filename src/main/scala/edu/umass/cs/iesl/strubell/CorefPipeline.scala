@@ -18,7 +18,7 @@ class SecondPrediction(val value : String)
 object CorefPipeline {
   def main(args: Array[String]) {
 	  println("Loading doc...")
-	  val testDoc = "data/conll2003/eng.testa.poop"
+	  val testDoc = "data/conll2003/eng.testa"
 //	  val doc = LoadOntonotes5.fromFilename(testDoc).head
     val docs = app.nlp.load.LoadConll2003(true).fromFilename(testDoc)
 
