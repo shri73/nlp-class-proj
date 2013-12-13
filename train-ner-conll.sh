@@ -6,8 +6,8 @@
 
 MEMORY=48g
 
-train="/iesl/canvas/strubell/conll2003/eng.train"
-test="/iesl/canvas/strubell/conll2003/eng.testa"
+train="/iesl/canvas/strubell/data/conll2003/eng.train"
+test="/iesl/canvas/strubell/data/conll2003/eng.testa"
 
 MODELNAME="ConllStackedNer.factorie"
 train="--train=$train"
