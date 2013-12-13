@@ -23,8 +23,13 @@
 ##Suggestions for improvement
 ### POS
 - Use inferred NER label?
+- Some tags can be manually set, such as TO=TO when predicted label is IN. Very dumb but seemingly effective.
 
 ### NER
 - Use POS label?
 
 ### Parser
+
+### Overall
+- Cross train each model?
+	- Can we do this tonight?
