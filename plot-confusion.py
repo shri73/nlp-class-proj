@@ -56,7 +56,7 @@ ax1.set_yticks(np.arange(len(pos_labels)))
 ax1.set_yticklabels(pos_labels,fontsize=8)
 ax1.set_xticks(np.arange(len(pos_labels)))
 ax1.set_xticklabels(pos_labels,rotation=90,fontsize=8)
-plt.savefig("pos_output.png", bbox_inches='tight')
+plt.savefig("pos_output.pdf", bbox_inches='tight')
 
 
 fig2 = plt.figure()
@@ -69,7 +69,7 @@ ax2.set_yticks(np.arange(len(parse_labels)))
 ax2.set_yticklabels(parse_labels,fontsize=8)
 ax2.set_xticks(np.arange(len(parse_labels)))
 ax2.set_xticklabels(parse_labels,rotation=90,fontsize=8)
-plt.savefig("parse_output.png", bbox_inches='tight')
+plt.savefig("parse_output.pdf", bbox_inches='tight')
 
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
@@ -85,4 +85,4 @@ ax3.set_xticklabels(ner_labels,rotation=90,fontsize=8)
 pos_worst = np.argsort(pos_data)
 print pos_worst
 
-plt.savefig("ner_output.png", bbox_inches='tight')
+plt.savefig("ner_output.pdf", bbox_inches='tight')
