@@ -10,7 +10,7 @@ object ErrorAnalyzer {
     
 	println("Loading docs...")
 	
-	val ontonotesTestFiles = FileUtils.getFileListFromDir("/Users/strubell/Documents/research/data/general-2.0.1/dev-pmd")
+	val ontonotesTestFiles = FileUtils.getFileListFromDir("/home/strubell/canvas/data/general-2.0.1/dev-pmd")
 	val ontonotesTestDocs = ontonotesTestFiles.map(f => {LoadOntonotes5.fromFilename(f).head})
 	  
 	val conllTestFile = "data/conll2003/eng.testa"
