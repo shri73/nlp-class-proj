@@ -57,7 +57,10 @@ object OutputFormatter {
     docs.flatMap(_.sentences).flatMap(_.tokens).foreach(tok => {
       val assignedLabel = tok.attr[LabeledPennPosTag].value
       val goldLabel = tok.attr[LabeledPennPosTag].target.value
-      if (goldLabel != assignedLabel) {
+      //println(s"${assignedLabel.toString}/${goldLabel.toString}")
+      println(s"${tok.attr[PennPosTag].value}/${tok.attr[LabeledPennPosTag].target.value}")
+      //if (goldLabel != assignedLabel) {
+      if(!tok.attr[LabeledPennPosTag].valueIsTarget){
         mistakes(PennPosDomain.getIndex(goldLabel.toString))(PennPosDomain.getIndex(assignedLabel.toString)) += 1
       }
     })

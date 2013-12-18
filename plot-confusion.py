@@ -60,7 +60,6 @@ ax1.set_xticks(np.arange(len(pos_labels)))
 ax1.set_xticklabels(pos_labels,rotation=90,fontsize=8)
 plt.savefig("pos_output.pdf", bbox_inches='tight')
 
-
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
 ax2.imshow(parse_data, interpolation='nearest')
@@ -85,6 +84,18 @@ ax3.set_xticks(np.arange(len(ner_labels)))
 ax3.set_xticklabels(ner_labels,rotation=90,fontsize=8)
 plt.savefig("ner_output.pdf", bbox_inches='tight')
 
-#pos_worst = np.argsort(pos_data)
-#print pos_worst
+worst_pos_args = map(lambda x: (x/len(pos_labels),x%len(pos_labels)), np.argsort(pos_data.flatten()))
+for pair in worst_pos_args:
+    print "%s/%s: %d" % (pos_labels[pair[0]], pos_labels[pair[1]], pos_data[pair])
+print ""
+
+worst_ner_args = map(lambda x: (x/len(ner_labels),x%len(ner_labels)), np.argsort(ner_data.flatten()))
+for pair in worst_ner_args:
+    print "%s/%s: %d" % (ner_labels[pair[0]], ner_labels[pair[1]], ner_data[pair])
+print ""
+
+worst_parse_args = map(lambda x: (x/len(parse_labels),x%len(parse_labels)), np.argsort(parse_data.flatten()))
+for pair in worst_parse_args:
+    print "%s/%s: %d" % (parse_labels[pair[0]], parse_labels[pair[1]], parse_data[pair])
+print ""
 

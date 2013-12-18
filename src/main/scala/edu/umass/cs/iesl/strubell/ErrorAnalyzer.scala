@@ -10,7 +10,9 @@ object ErrorAnalyzer {
     
 	println("Loading docs...")
 	
-	val ontonotesTestFiles = FileUtils.getFileListFromDir("/home/strubell/canvas/data/general-2.0.1/dev-pmd")
+	//val ontonotesDir = "/home/strubell/canvas/data/general-2.0.1/dev-pmd"
+	val ontonotesDir = "/Users/strubell/Documents/research/data/general-2.0.1/dev-pmd"
+	val ontonotesTestFiles = FileUtils.getFileListFromDir(ontonotesDir)
 	val ontonotesTestDocs = ontonotesTestFiles.map(f => {LoadOntonotes5.fromFilename(f).head})
 	  
 	val conllTestFile = "data/conll2003/eng.testa"
@@ -31,13 +33,18 @@ object ErrorAnalyzer {
 	
     /* Run the pipeline */
     print("Running pipeline... ")
-    val pipeline = app.nlp.DocumentAnnotatorPipeline(tagger)
-    ontonotesTestDocs.foreach(doc => pipeline.process(doc))
+    val pipeline = new app.nlp.DocumentAnnotationPipeline(Seq(tagger))
+    ontonotesTestDocs.map(doc => pipeline.process(doc))
+    
+    //val ontonotesTestDoc = ontonotesTestDocs.head
+    //val processedDoc = pipeline.process(ontonotesTestDoc)
+    println(pipeline.profileReport)
     
     /* Generate nicely formatted error output */
     println("Generating output...")
     //OutputFormatter.generateTikzFiles(doc, "mark_prep")
     OutputFormatter.generateConfusionDataPos(ontonotesTestDocs)
+    //OutputFormatter.generateConfusionDataPos(ontonotesTestDoc)
     //OutputFormatter.generateConfusionDataNer(conllTestDoc)
   }
 }
