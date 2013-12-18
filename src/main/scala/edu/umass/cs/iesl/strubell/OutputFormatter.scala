@@ -48,13 +48,13 @@ object OutputFormatter {
     parseConfusionWriter.close
   }
   
-  def generateConfusionDataPos(doc: Document) = {
+  def generateConfusionDataPos(docs: Seq[Document]) = {
     val numLabels = PennPosDomain.size
     var mistakes = Array.fill(numLabels, numLabels) { 0 }
     val confusionWriter = new PrintWriter(new File("pos-confusion.dat"))
     val labelWriter = new PrintWriter(new File("pos-labels"))
 
-    doc.sentences.flatMap(_.tokens).foreach(tok => {
+    docs.flatMap(_.sentences).flatMap(_.tokens).foreach(tok => {
       val assignedLabel = tok.attr[LabeledPennPosTag].value
       val goldLabel = tok.attr[LabeledPennPosTag].target.value
       if (goldLabel != assignedLabel) {
@@ -66,6 +66,25 @@ object OutputFormatter {
     labelWriter.close
     confusionWriter.close
   }
+  
+//  def generateConfusionDataPos(doc: Document) = {
+//    val numLabels = PennPosDomain.size
+//    var mistakes = Array.fill(numLabels, numLabels) { 0 }
+//    val confusionWriter = new PrintWriter(new File("pos-confusion.dat"))
+//    val labelWriter = new PrintWriter(new File("pos-labels"))
+//
+//    doc.sentences.flatMap(_.tokens).foreach(tok => {
+//      val assignedLabel = tok.attr[LabeledPennPosTag].value
+//      val goldLabel = tok.attr[LabeledPennPosTag].target.value
+//      if (goldLabel != assignedLabel) {
+//        mistakes(PennPosDomain.getIndex(goldLabel.toString))(PennPosDomain.getIndex(assignedLabel.toString)) += 1
+//      }
+//    })
+//    mistakes.foreach(x => confusionWriter.println(x.mkString(" ")))
+//    PennPosDomain.foreach(x => labelWriter.println(x))
+//    labelWriter.close
+//    confusionWriter.close
+//  }
   
   def generateConfusionDataNer(doc: Document) = {
     val numLabels = BilouConllNerDomain.size
